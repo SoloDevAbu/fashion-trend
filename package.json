@@ -1,0 +1,30 @@
+{
+  "name": "fashion-trend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.29.3",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "1.0.0-rc.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "drizzle-kit": "1.0.0-rc.4",
+    "tsx": "^4.22.4"
+  }
+}
