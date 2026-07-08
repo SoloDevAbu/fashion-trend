@@ -14,7 +14,7 @@ export class AjioParser {
     const products: NormalizedProduct[] = [];
     const seen = new Set<string>();
 
-    for (const item of raw.items as AjioRawItem[]) {
+    for (const item of (raw.items as unknown) as AjioRawItem[]) {
       if (!item.href || !item.imageUrl) continue;
 
       const productUrl = item.href.startsWith('http')
@@ -34,7 +34,7 @@ export class AjioParser {
         productUrl,
         ...(price !== undefined ? { price } : {}),
         currency:   'INR',
-        brand:      item.brand || undefined,
+        ...(item.brand ? { brand: item.brand } : {}),
         scrapedAt:  raw.capturedAt,
       });
     }

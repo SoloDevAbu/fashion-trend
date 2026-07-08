@@ -12,7 +12,7 @@ export class PinterestParser {
     const products: NormalizedProduct[] = [];
     const seen = new Set<string>();
 
-    for (const item of raw.items as PinterestRawItem[]) {
+    for (const item of (raw.items as unknown) as PinterestRawItem[]) {
       if (!item.imageUrl) continue;
 
       const imageUrl   = item.imageUrl.includes(LOW_RES_SEGMENT)

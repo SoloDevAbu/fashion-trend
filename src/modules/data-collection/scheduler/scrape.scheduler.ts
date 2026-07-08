@@ -3,7 +3,7 @@ import { logger } from "../../../lib/logger";
 import type { CrawlerService } from "../crawler/crawler.service";
 
 export class ScrapeScheduler {
-  private readonly tasks: cron.ScheduledTask[] = [];
+  private readonly tasks: ReturnType<typeof cron.schedule>[] = [];
 
   constructor(private readonly crawlerService: CrawlerService) {}
 
