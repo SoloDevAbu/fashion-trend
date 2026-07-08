@@ -1,4 +1,4 @@
-import { logger } from '../../../lib/logger';
+import { logger } from "../../../lib/logger";
 import type {
   ISourceCrawler,
   CrawlerResult,
@@ -6,8 +6,8 @@ import type {
   PipelineContext,
   NormalizedProduct,
   ProductSource,
-} from './crawler.types';
-import type { IPipeline } from '../pipelines/product.pipeline';
+} from "./crawler.types";
+import type { IPipeline } from "../pipelines/dedupe.pipeline";
 
 export class CrawlerService {
   constructor(
@@ -18,15 +18,23 @@ export class CrawlerService {
   async runAll(): Promise<CrawlerStatistics> {
     const start = Date.now();
 
-    logger.info({ sources: this.crawlers.map((c) => c.source) }, 'Data collection run started');
+    logger.info(
+      { sources: this.crawlers.map((c) => c.source) },
+      "Data collection run started",
+    );
 
     // Run all source crawlers in parallel
-    const settled = await Promise.allSettled(this.crawlers.map((c) => this.runOne(c)));
+    const settled = await Promise.allSettled(
+      this.crawlers.map((c) => this.runOne(c)),
+    );
 
     const results: CrawlerResult[] = settled.map((r, i) => {
-      if (r.status === 'fulfilled') return r.value;
+      if (r.status === "fulfilled") return r.value;
       const source = this.crawlers[i]!.source;
-      logger.error({ source, error: String(r.reason) }, 'Source crawler rejected');
+      logger.error(
+        { source, error: String(r.reason) },
+        "Source crawler rejected",
+      );
       return {
         source,
         products: [],
@@ -42,16 +50,16 @@ export class CrawlerService {
         .filter((r) => r.products.length > 0)
         .map((r) =>
           this.executePipelines({
-            products:  r.products,
-            runId:     `${r.source}-${Date.now()}`,
-            source:    r.source,
+            products: r.products,
+            runId: `${r.source}-${Date.now()}`,
+            source: r.source,
             startedAt: r.startedAt,
           }),
         ),
     );
 
     const stats = this.buildStatistics(results, Date.now() - start);
-    logger.info(stats, 'Data collection run completed');
+    logger.info(stats, "Data collection run completed");
     return stats;
   }
 
@@ -61,16 +69,28 @@ export class CrawlerService {
     let products: NormalizedProduct[] = [];
 
     try {
-      logger.info({ source: crawler.source }, 'Starting source crawler');
+      logger.info({ source: crawler.source }, "Starting source crawler");
       products = await crawler.run();
-      logger.info({ source: crawler.source, count: products.length }, 'Source crawler finished');
+      logger.info(
+        { source: crawler.source, count: products.length },
+        "Source crawler finished",
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(msg);
-      logger.error({ source: crawler.source, error: msg }, 'Source crawler failed');
+      logger.error(
+        { source: crawler.source, error: msg },
+        "Source crawler failed",
+      );
     }
 
-    return { source: crawler.source, products, startedAt, completedAt: new Date(), errors };
+    return {
+      source: crawler.source,
+      products,
+      startedAt,
+      completedAt: new Date(),
+      errors,
+    };
   }
 
   // Pipelines within a source chain run sequentially (dedupe → image → product)
@@ -81,25 +101,33 @@ export class CrawlerService {
       } catch (err) {
         logger.error(
           { pipeline: pipeline.name, source: ctx.source, error: String(err) },
-          'Pipeline execution failed',
+          "Pipeline execution failed",
         );
       }
     }
   }
 
-  private buildStatistics(results: CrawlerResult[], durationMs: number): CrawlerStatistics {
-    const perSource: Partial<Record<ProductSource, { count: number; errors: number }>> = {};
+  private buildStatistics(
+    results: CrawlerResult[],
+    durationMs: number,
+  ): CrawlerStatistics {
+    const perSource: Partial<
+      Record<ProductSource, { count: number; errors: number }>
+    > = {};
     let totalProducts = 0;
     let totalErrors = 0;
 
     for (const r of results) {
-      perSource[r.source] = { count: r.products.length, errors: r.errors.length };
+      perSource[r.source] = {
+        count: r.products.length,
+        errors: r.errors.length,
+      };
       totalProducts += r.products.length;
-      totalErrors   += r.errors.length;
+      totalErrors += r.errors.length;
     }
 
     return {
-      totalSources:  results.length,
+      totalSources: results.length,
       totalProducts,
       totalErrors,
       durationMs,
