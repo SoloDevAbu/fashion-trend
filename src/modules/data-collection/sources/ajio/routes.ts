@@ -33,9 +33,14 @@ export function createAjioRouter(collector: NormalizedProduct[]) {
         const anchor = card.querySelector(sel.productLink) as HTMLAnchorElement | null;
         const img    = card.querySelector(sel.productImage) as HTMLImageElement | null;
 
+        const imageUrl =
+          img?.getAttribute('data-lazy-src') ??
+          img?.getAttribute('data-src') ??
+          (img?.src?.startsWith('data:') ? '' : (img?.src ?? ''));
+
         return {
           href:     anchor?.href ?? '',
-          imageUrl: img?.src ?? img?.getAttribute('data-src') ?? '',
+          imageUrl,
           brand:    card.querySelector(sel.brand)?.textContent?.trim()       ?? '',
           name:     card.querySelector(sel.name)?.textContent?.trim()        ?? '',
           price:   (

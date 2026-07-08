@@ -1,6 +1,6 @@
 import type { CrawlerConfig, ProductSource } from './crawler.types';
 
-export const defaultCrawlerConfig: Omit<CrawlerConfig, 'source' | 'startUrls'> = {
+export const defaultCrawlerConfig: Omit<CrawlerConfig, 'source' | 'startUrls' | 'storageDir'> = {
   maxRequestsPerCrawl:       parseInt(process.env['MAX_REQUESTS_PER_CRAWL'] ?? '100'),
   maxConcurrency:            parseInt(process.env['CRAWLER_CONCURRENCY']    ?? '2'),
   navigationTimeoutSecs:     parseInt(process.env['NAV_TIMEOUT_SECS']       ?? '60'),
@@ -13,12 +13,13 @@ export const defaultCrawlerConfig: Omit<CrawlerConfig, 'source' | 'startUrls'> =
 export function buildConfig(
   source: ProductSource,
   startUrls: string[],
-  overrides: Partial<Omit<CrawlerConfig, 'source' | 'startUrls'>> = {},
+  overrides: Partial<Omit<CrawlerConfig, 'source' | 'startUrls' | 'storageDir'>> = {},
 ): CrawlerConfig {
   return {
     source,
     startUrls,
     ...defaultCrawlerConfig,
     ...overrides,
+    storageDir: `.crawlee/${source}`,
   };
 }

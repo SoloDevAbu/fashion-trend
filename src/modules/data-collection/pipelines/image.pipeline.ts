@@ -16,7 +16,7 @@ export class ImagePipeline implements IPipeline {
     logger.info({ source: ctx.source, count: ctx.products.length }, 'ImagePipeline started');
 
     for (const product of ctx.products) {
-      if (product.localImagePath) continue;
+      if (product.localImagePath || !product.imageUrl) continue;
 
       try {
         const buffer    = await this.downloader.download(product.imageUrl, product.source);
@@ -28,7 +28,11 @@ export class ImagePipeline implements IPipeline {
 
         product.localImagePath = localPath;
       } catch (err) {
-        logger.warn({ imageUrl: product.imageUrl, error: String(err) }, 'Image download failed, skipping');
+        const status = (err as { response?: { status?: number } }).response?.status;
+        logger.warn(
+          { source: product.source, imageUrl: product.imageUrl, status, error: String(err) },
+          'Image download failed, skipping',
+        );
       }
     }
   }

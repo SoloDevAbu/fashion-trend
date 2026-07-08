@@ -53,6 +53,7 @@ export interface CrawlerConfig {
   maxRetries: number;
   useSessionPool: boolean;
   headless: boolean;
+  storageDir: string;
 }
 
 export interface PipelineContext {

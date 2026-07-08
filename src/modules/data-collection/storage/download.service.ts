@@ -11,6 +11,16 @@ const SOURCE_REFERERS: Record<ProductSource, string> = {
   pinterest: 'https://in.pinterest.com',
 };
 
+const SOURCE_EXTRA_HEADERS: Partial<Record<ProductSource, Record<string, string>>> = {
+  ajio: {
+    Origin:           'https://www.ajio.com',
+    Accept:           'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+    'Sec-Fetch-Dest': 'image',
+    'Sec-Fetch-Mode': 'no-cors',
+    'Sec-Fetch-Site': 'same-site',
+  },
+};
+
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36';
 
@@ -22,6 +32,7 @@ export class AxiosDownloadService implements IDownloadService {
       headers: {
         'User-Agent': USER_AGENT,
         'Referer':    SOURCE_REFERERS[source],
+        ...SOURCE_EXTRA_HEADERS[source],
       },
     });
 
