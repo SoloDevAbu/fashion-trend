@@ -69,6 +69,15 @@ export class ProductRepository {
     return result;
   }
 
+  async findByProductUrl(productUrl: string): Promise<Product | undefined> {
+    const [row] = await db
+      .select()
+      .from(products)
+      .where(eq(products.productUrl, productUrl))
+      .limit(1);
+    return row;
+  }
+
   async existsByProductUrl(productUrl: string): Promise<boolean> {
     const [row] = await db
       .select({ id: products.id })

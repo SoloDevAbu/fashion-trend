@@ -29,7 +29,7 @@ export async function runAnalyzeJob(): Promise<void> {
 
     for (const product of products) {
       try {
-        const imageSource = product.localImagePath ?? product.imageUrl;
+        const imageSource = product.imageUrl;
         const attributes = await visionService.analyzeImage(imageSource);
 
         if (attributes) {
