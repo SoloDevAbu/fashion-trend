@@ -1,18 +1,21 @@
 export type ProductSource = 'myntra' | 'ajio' | 'pinterest';
 
 export interface NormalizedProduct {
-  externalId: string;
-  title: string;
-  source: ProductSource;
-  imageUrl: string;
-  productUrl: string;
-  price?: number;
-  currency: string;
-  brand?: string;
-  category?: string;
-  imageHash?: string;
-  localImagePath?: string;
-  scrapedAt: Date;
+  externalId:    string;
+  title:         string;
+  source:        ProductSource;
+  imageUrl:      string;
+  productUrl:    string;
+  price?:        number;
+  currency:      string;
+  brand?:        string;
+  category?:     string;
+  imageHash?:    string;
+  cloudinaryUrl?: string;
+  rating?:       number;
+  ratingCount?:  number;
+  dbId?:         number;
+  scrapedAt:     Date;
 }
 
 export interface RawPageData {

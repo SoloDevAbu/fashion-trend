@@ -32,13 +32,15 @@ export class ProductService {
     }
 
     const product = await this.repo.insert({
-      title: parsed.data.title,
-      source: parsed.data.source,
-      imageUrl: parsed.data.imageUrl,
-      localImagePath: parsed.data.localImagePath,
-      productUrl: parsed.data.productUrl,
-      price: parsed.data.price,
-      currency: parsed.data.currency,
+      title:         parsed.data.title,
+      source:        parsed.data.source,
+      imageUrl:      parsed.data.imageUrl,
+      cloudinaryUrl: parsed.data.cloudinaryUrl,
+      productUrl:    parsed.data.productUrl,
+      price:         parsed.data.price,
+      currency:      parsed.data.currency,
+      rating:        parsed.data.rating,
+      ratingCount:   parsed.data.ratingCount,
     });
 
     logger.info(
