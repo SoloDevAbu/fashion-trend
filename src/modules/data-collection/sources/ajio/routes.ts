@@ -39,14 +39,16 @@ export function createAjioRouter(collector: NormalizedProduct[]) {
           (img?.src?.startsWith('data:') ? '' : (img?.src ?? ''));
 
         return {
-          href:     anchor?.href ?? '',
+          href:        anchor?.href ?? '',
           imageUrl,
-          brand:    card.querySelector(sel.brand)?.textContent?.trim()       ?? '',
-          name:     card.querySelector(sel.name)?.textContent?.trim()        ?? '',
-          price:   (
+          brand:       card.querySelector(sel.brand)?.textContent?.trim()        ?? '',
+          name:        card.querySelector(sel.name)?.textContent?.trim()         ?? '',
+          price:      (
             card.querySelector(sel.priceStrong) ??
             card.querySelector(sel.price)
           )?.textContent?.trim() ?? '',
+          ratingValue: (card.querySelector(sel.ratingValue) as HTMLElement | null)?.textContent?.trim() ?? '',
+          ratingCount: (card.querySelector(sel.ratingCountEl) as HTMLElement | null)?.textContent?.trim() ?? '',
         };
       });
     }, SELECTORS);

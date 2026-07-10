@@ -16,7 +16,7 @@ export class ImagePipeline implements IPipeline {
     logger.info({ source: ctx.source, count: ctx.products.length }, 'ImagePipeline started');
 
     for (const product of ctx.products) {
-      if (product.localImagePath || !product.imageUrl) continue;
+      if (product.cloudinaryUrl || !product.imageUrl) continue;
 
       try {
         const buffer    = await this.downloader.download(product.imageUrl, product.source);
@@ -26,7 +26,7 @@ export class ImagePipeline implements IPipeline {
           imageUrl:   product.imageUrl,
         });
 
-        product.localImagePath = localPath;
+        product.cloudinaryUrl = localPath;
       } catch (err) {
         const status = (err as { response?: { status?: number } }).response?.status;
         logger.warn(

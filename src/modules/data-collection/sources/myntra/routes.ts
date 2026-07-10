@@ -20,18 +20,21 @@ export function createMyntraRouter(collector: NormalizedProduct[]) {
     const rawItems = await page.evaluate((sel) => {
       const cards = document.querySelectorAll(sel.productCard);
       return Array.from(cards).map((card) => {
-        const anchor = card.querySelector(sel.productLink) as HTMLAnchorElement | null;
-        const img    = card.querySelector(sel.productImage) as HTMLImageElement | null;
+        const anchor    = card.querySelector(sel.productLink) as HTMLAnchorElement | null;
+        const img       = card.querySelector(sel.productImage) as HTMLImageElement | null;
+        const ratingCtr = card.querySelector(sel.ratingContainer);
 
         return {
-          href:     anchor?.href ?? '',
-          imageUrl: img?.src ?? img?.getAttribute('data-src') ?? '',
-          brand:    card.querySelector(sel.productBrand)?.textContent?.trim()    ?? '',
-          title:    card.querySelector(sel.productName)?.textContent?.trim()     ?? '',
-          price:   (
+          href:        anchor?.href ?? '',
+          imageUrl:    img?.src ?? img?.getAttribute('data-src') ?? '',
+          brand:       card.querySelector(sel.productBrand)?.textContent?.trim()   ?? '',
+          title:       card.querySelector(sel.productName)?.textContent?.trim()    ?? '',
+          price:      (
             card.querySelector(sel.discountedPrice) ??
             card.querySelector(sel.originalPrice)
           )?.textContent?.trim() ?? '',
+          ratingValue: (ratingCtr?.querySelector('span:first-child') as HTMLElement | null)?.textContent?.trim() ?? '',
+          ratingCount: (ratingCtr?.querySelector(sel.ratingCount) as HTMLElement | null)?.textContent?.trim() ?? '',
         };
       });
     }, SELECTORS);

@@ -2,11 +2,13 @@ import type { NormalizedProduct, RawPageData } from '../../crawler/crawler.types
 import { BASE_URL } from './constants';
 
 interface MyntraRawItem {
-  href:     string;
-  imageUrl: string;
-  brand:    string;
-  title:    string;
-  price:    string;
+  href:        string;
+  imageUrl:    string;
+  brand:       string;
+  title:       string;
+  price:       string;
+  ratingValue: string;
+  ratingCount: string;
 }
 
 export class MyntraParser {
@@ -24,7 +26,9 @@ export class MyntraParser {
       if (seen.has(productUrl)) continue;
       seen.add(productUrl);
 
-      const price = this.parsePrice(item.price);
+      const price       = this.parsePrice(item.price);
+      const rating      = this.parseRating(item.ratingValue);
+      const ratingCount = this.parseRatingCount(item.ratingCount);
 
       products.push({
         externalId: this.extractExternalId(productUrl),
@@ -32,7 +36,9 @@ export class MyntraParser {
         source:     'myntra',
         imageUrl:   item.imageUrl,
         productUrl,
-        ...(price !== undefined ? { price } : {}),
+        ...(price       !== undefined ? { price }       : {}),
+        ...(rating      !== undefined ? { rating }      : {}),
+        ...(ratingCount !== undefined ? { ratingCount } : {}),
         currency:   'INR',
         ...(item.brand ? { brand: item.brand } : {}),
         scrapedAt:  raw.capturedAt,
@@ -44,6 +50,23 @@ export class MyntraParser {
 
   private parsePrice(raw: string): number | undefined {
     const n = parseFloat(raw.replace(/[^\d.]/g, ''));
+    return isNaN(n) ? undefined : n;
+  }
+
+  private parseRating(raw: string): number | undefined {
+    const n = parseFloat(raw.trim());
+    return isNaN(n) || n < 0 || n > 5 ? undefined : n;
+  }
+
+  private parseRatingCount(raw: string): number | undefined {
+    // Strip separator characters: "| 1.7k" → "1.7k"
+    const cleaned = raw.replace(/[|\s,]/g, '');
+    if (!cleaned) return undefined;
+
+    const kMatch = cleaned.match(/^([\d.]+)k$/i);
+    if (kMatch) return Math.round(parseFloat(kMatch[1]!) * 1000);
+
+    const n = parseInt(cleaned, 10);
     return isNaN(n) ? undefined : n;
   }
 
