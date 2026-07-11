@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button"
 const SCRAPE_STEPS = [
   "Connecting Crawlee Scrapers to Myntra & Ajio",
   "Extracting Product Listings, Images & Customer Ratings (★)",
-  "Calculating Weighted Popularity Scores (Rating × log10(ReviewCount + 1))",
+  "Calculating Weighted Popularity Scores",
   "Saving Top 10 Trending Snapshots to Database",
 ]
 
