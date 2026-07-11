@@ -8,7 +8,7 @@ import { runTrendJob } from "./jobs/trend.job";
 import { runGenerateJob } from "./jobs/generate.job";
 import { closeBrowser } from "./lib/playwright";
 
-const PORT = parseInt(process.env.PORT ?? "3000");
+const PORT = parseInt(process.env.PORT ?? "3000", 10);
 const HOST = process.env.HOST ?? "0.0.0.0";
 
 // Cron schedules

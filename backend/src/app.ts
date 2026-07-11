@@ -12,10 +12,40 @@ export async function buildApp() {
     logger: false, // We use our own pino logger
   });
 
+  const allowedOrigins = (
+    process.env.FRONTEND_URL ||
+    process.env.CORS_ORIGIN ||
+    "*"
+  )
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
+  logger.info({ allowedOrigins }, "Configuring CORS origins");
+
   // Plugins
   await app.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: (origin, cb) => {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) {
+        return cb(null, true);
+      }
+
+      const normalizedOrigin = origin.replace(/\/$/, "");
+
+      if (
+        allowedOrigins.includes("*") ||
+        allowedOrigins.includes("true") ||
+        allowedOrigins.includes(normalizedOrigin)
+      ) {
+        return cb(null, true);
+      }
+
+      logger.warn({ origin, allowedOrigins }, "CORS request blocked");
+      return cb(null, false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
   });
 
   // Health check
