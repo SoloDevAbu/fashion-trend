@@ -5,6 +5,7 @@ import { productsRoute } from "./routes/products.route";
 import { trendsRoute } from "./routes/trends.route";
 import { designsRoute } from "./routes/designs.route";
 import { jobsRoute } from "./routes/jobs.route";
+import { trendingRoute } from "./routes/trending.route";
 
 export async function buildApp() {
   const app = Fastify({
@@ -30,6 +31,7 @@ export async function buildApp() {
     version: "1.0.0",
     endpoints: {
       products: "/products",
+      trending: "/trending/latest",
       trends: "/trends/latest",
       designs: "/designs",
       jobs: "/jobs/*",
@@ -40,8 +42,10 @@ export async function buildApp() {
   // Routes
   await app.register(productsRoute);
   await app.register(trendsRoute);
+  await app.register(trendingRoute);
   await app.register(designsRoute);
   await app.register(jobsRoute);
+
 
   // Global error handler
   app.setErrorHandler(

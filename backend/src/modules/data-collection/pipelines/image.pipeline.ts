@@ -19,14 +19,21 @@ export class ImagePipeline implements IPipeline {
       if (product.cloudinaryUrl || !product.imageUrl) continue;
 
       try {
-        const buffer    = await this.downloader.download(product.imageUrl, product.source);
-        const localPath = await this.storage.save(buffer, {
+        // Use a pre-fetched buffer if provided (e.g. Ajio browser-context fetch),
+        // otherwise fall back to the axios downloader.
+        const buffer = product.imageBuffer
+          ?? await this.downloader.download(product.imageUrl, product.source);
+
+        // Free memory once uploaded
+        delete product.imageBuffer;
+
+        const cloudinaryUrl = await this.storage.save(buffer, {
           source:     product.source,
           externalId: product.externalId,
           imageUrl:   product.imageUrl,
         });
 
-        product.cloudinaryUrl = localPath;
+        product.cloudinaryUrl = cloudinaryUrl;
       } catch (err) {
         const status = (err as { response?: { status?: number } }).response?.status;
         logger.warn(

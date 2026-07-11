@@ -32,7 +32,7 @@ export class MyntraParser {
 
       products.push({
         externalId: this.extractExternalId(productUrl),
-        title:      [item.brand, item.title].filter(Boolean).join(' - ') || 'Product',
+        title:      ([item.brand, item.title].filter(Boolean).join(' - ') || 'Product').slice(0, 500),
         source:     'myntra',
         imageUrl:   item.imageUrl,
         productUrl,
@@ -49,8 +49,25 @@ export class MyntraParser {
   }
 
   private parsePrice(raw: string): number | undefined {
-    const n = parseFloat(raw.replace(/[^\d.]/g, ''));
-    return isNaN(n) ? undefined : n;
+    const text = raw.trim();
+    if (!text) return undefined;
+
+    // Handle k-suffixed prices: "1.2k" → 1200, "0.44k" → 440
+    const kMatch = text.match(/([\d.]+)k/i);
+    if (kMatch) {
+      const n = Math.round(parseFloat(kMatch[1]!) * 1000);
+      return n > 0 ? n : undefined;
+    }
+
+    const n = parseFloat(text.replace(/[^\d.]/g, ''));
+    if (isNaN(n) || n <= 0) return undefined;
+
+    // Sanity check: discard suspiciously small values that are likely
+    // discount percentages (e.g. "44% OFF" → 44) misidentified as prices.
+    // Real INR prices are never less than ₹10.
+    if (n < 10) return undefined;
+
+    return n;
   }
 
   private parseRating(raw: string): number | undefined {

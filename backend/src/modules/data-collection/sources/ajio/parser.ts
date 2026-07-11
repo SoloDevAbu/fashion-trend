@@ -32,7 +32,7 @@ export class AjioParser {
 
       products.push({
         externalId: this.extractExternalId(productUrl),
-        title:      [item.brand, item.name].filter(Boolean).join(' - ') || 'Product',
+        title:      ([item.brand, item.name].filter(Boolean).join(' - ') || 'Product').slice(0, 500),
         source:     'ajio',
         imageUrl:   item.imageUrl,
         productUrl,
@@ -49,8 +49,19 @@ export class AjioParser {
   }
 
   private parsePrice(raw: string): number | undefined {
-    const n = parseFloat(raw.replace(/[^\d.]/g, ''));
-    return isNaN(n) ? undefined : n;
+    const text = raw.trim();
+    if (!text) return undefined;
+
+    const kMatch = text.match(/([\d.]+)k/i);
+    if (kMatch) {
+      const n = Math.round(parseFloat(kMatch[1]!) * 1000);
+      return n > 0 ? n : undefined;
+    }
+
+    const n = parseFloat(text.replace(/[^\d.]/g, ''));
+    if (isNaN(n) || n <= 0 || n < 10) return undefined;
+
+    return n;
   }
 
   private parseRating(raw: string): number | undefined {

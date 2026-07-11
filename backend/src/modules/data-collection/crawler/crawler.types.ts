@@ -11,6 +11,7 @@ export interface NormalizedProduct {
   brand?:        string;
   category?:     string;
   imageHash?:    string;
+  imageBuffer?:  Buffer;    // Pre-fetched by browser-context (avoids CDN bot blocking)
   cloudinaryUrl?: string;
   rating?:       number;
   ratingCount?:  number;

@@ -10,8 +10,11 @@ import {
   MODAL_TIMEOUT_MS,
   PRODUCT_CARD_TIMEOUT_MS,
 } from './constants';
+import { logger } from '../../../../lib/logger';
 
 const parser = new AjioParser();
+
+const AJIO_CDN_PATTERN = /assets[^.]*\.ajio\.com/;
 
 export function createAjioRouter(collector: NormalizedProduct[]) {
   const router = createPlaywrightRouter();
@@ -19,9 +22,39 @@ export function createAjioRouter(collector: NormalizedProduct[]) {
   router.addDefaultHandler(async ({ page, log }) => {
     log.info(`Visiting: ${page.url()}`);
 
+    const capturedImages = new Map<string, Buffer>();
+
+    // Intercept all image requests via page.route().
+    // route.fetch() sends the request THROUGH the browser (preserving Akamai
+    // session cookies + TLS fingerprint), so CDN bot-detection is bypassed.
+    await page.route('**/*', async (route) => {
+      const url = route.request().url();
+      const resourceType = route.request().resourceType();
+
+      if (resourceType === 'image' && AJIO_CDN_PATTERN.test(url)) {
+        try {
+          const response = await route.fetch();
+          const body     = await response.body();
+          if (body.length > 0) {
+            capturedImages.set(url.split('?')[0]!, Buffer.from(body));
+          }
+          await route.fulfill({ response, body });
+        } catch {
+          await route.continue();
+        }
+      } else {
+        await route.continue();
+      }
+    });
+
     await page.waitForTimeout(PAGE_LOAD_WAIT_MS);
     await dismissModals(page);
     await scrollPage(page);
+
+    // Brief pause after last scroll for lazy images to complete loading
+    await page.waitForTimeout(1000);
+
+    await page.unroute('**/*');
 
     await page
       .waitForSelector(SELECTORS.productCard, { timeout: PRODUCT_CARD_TIMEOUT_MS })
@@ -60,8 +93,25 @@ export function createAjioRouter(collector: NormalizedProduct[]) {
       capturedAt: new Date(),
     });
 
+    // Attach intercepted image buffers to their matching products
+    let hits = 0;
+    for (const product of products) {
+      if (!product.imageUrl) continue;
+      const key = product.imageUrl.split('?')[0]!;
+      const buf = capturedImages.get(key);
+      if (buf) {
+        product.imageBuffer = buf;
+        hits++;
+      }
+    }
+
+    logger.info(
+      { total: products.length, withBuffer: hits, cached: capturedImages.size },
+      'Ajio image capture summary',
+    );
+
     collector.push(...products);
-    log.info(`Collected ${products.length} products`);
+    log.info(`Collected ${products.length} products (${hits}/${products.length} images captured)`);
   });
 
   return router;
