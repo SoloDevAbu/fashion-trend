@@ -1,10 +1,20 @@
-import React from "react";
-import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+"use client"
+
+import React from "react"
+import { Loader2, Sparkles, CheckCircle2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 
 interface LoadingOverlayProps {
-  jobName: string;
-  steps: string[];
-  activeStep: number;
+  jobName: string
+  steps: string[]
+  activeStep: number
 }
 
 export function LoadingOverlay({
@@ -13,65 +23,72 @@ export function LoadingOverlay({
   activeStep,
 }: LoadingOverlayProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-300">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-purple-500/30 bg-slate-900/90 p-8 shadow-2xl shadow-purple-500/20">
-        {/* Glow effect */}
-        <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-48 w-48 rounded-full bg-pink-500/20 blur-3xl" />
-
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 shadow-lg shadow-purple-500/30">
-            <Loader2 className="h-8 w-8 animate-spin text-white" />
+    <Dialog open={true}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-lg border-zinc-800 bg-zinc-950 p-8 shadow-2xl shadow-black/80 sm:max-w-md"
+      >
+        <DialogHeader className="flex flex-col items-center text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 text-amber-400 shadow-md">
+            <Loader2 className="h-7 w-7 animate-spin" />
           </div>
 
-          <div className="mt-4 flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-300 border border-purple-500/20">
-            <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+          <Badge
+            variant="outline"
+            className="mt-3 border-zinc-800 bg-zinc-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-400"
+          >
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
             <span>AI DATA COLLECTION & RANKING</span>
-          </div>
+          </Badge>
 
-          <h3 className="mt-3 text-xl font-bold text-white">
+          <DialogTitle className="mt-3 text-xl font-bold text-white">
             Running {jobName}...
-          </h3>
-          <p className="mt-1 text-xs text-slate-400">
-            Please wait while the automated pipeline crawls and computes top trends.
-          </p>
+          </DialogTitle>
+          <DialogDescription className="text-xs text-zinc-400">
+            Please wait while the automated engine processes and computes live
+            trends.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="mt-6 w-full space-y-3 text-left">
-            {steps.map((step, idx) => {
-              const isDone = idx < activeStep;
-              const isCurrent = idx === activeStep;
+        <div className="mt-6 w-full space-y-2.5">
+          {steps.map((step, idx) => {
+            const isDone = idx < activeStep
+            const isCurrent = idx === activeStep
 
-              return (
-                <div
-                  key={step}
-                  className={`flex items-center gap-3 rounded-xl border p-3 transition-all duration-300 ${
+            return (
+              <div
+                key={step}
+                className={`flex items-center gap-3 rounded-xl border p-3.5 transition-all duration-300 ${
+                  isCurrent
+                    ? "border-amber-500/40 bg-amber-500/10 text-white shadow-sm"
+                    : isDone
+                      ? "border-zinc-800 bg-zinc-900/60 text-zinc-300"
+                      : "border-zinc-900 bg-zinc-950/40 text-zinc-600"
+                }`}
+              >
+                {isDone ? (
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-amber-400" />
+                ) : isCurrent ? (
+                  <Loader2 className="h-5 w-5 shrink-0 animate-spin text-amber-400" />
+                ) : (
+                  <div className="h-5 w-5 shrink-0 rounded-full border border-zinc-800" />
+                )}
+                <span
+                  className={`text-sm font-medium ${
                     isCurrent
-                      ? "border-purple-500/40 bg-purple-500/10 text-white"
+                      ? "font-semibold text-zinc-100"
                       : isDone
-                        ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-300"
-                        : "border-slate-800 bg-slate-900/40 text-slate-500"
+                        ? "text-zinc-300"
+                        : ""
                   }`}
                 >
-                  {isDone ? (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
-                  ) : isCurrent ? (
-                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-purple-400" />
-                  ) : (
-                    <div className="h-5 w-5 shrink-0 rounded-full border border-slate-700" />
-                  )}
-                  <span
-                    className={`text-sm font-medium ${
-                      isCurrent ? "text-purple-200" : ""
-                    }`}
-                  >
-                    {step}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                  {step}
+                </span>
+              </div>
+            )
+          })}
         </div>
-      </div>
-    </div>
-  );
+      </DialogContent>
+    </Dialog>
+  )
 }
