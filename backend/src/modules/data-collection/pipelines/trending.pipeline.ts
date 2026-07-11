@@ -18,7 +18,12 @@ export class TrendingPipeline implements IPipeline {
     );
 
     if (withRatings.length === 0) {
-      logger.info({ source: ctx.source }, 'TrendingPipeline: no rated products, skipping');
+      logger.info(
+        { source: ctx.source },
+        'TrendingPipeline: no rated products in run — falling back to DB',
+      );
+      // Try computing Top 10 from historically rated products already in the DB
+      await this.trendingService.computeAndSaveFromDB(ctx.runId, ctx.source);
       return;
     }
 
@@ -28,7 +33,6 @@ export class TrendingPipeline implements IPipeline {
       source:      p.source,
       rating:      p.rating!,
       ratingCount: p.ratingCount!,
-      // Weighted popularity: rating × log10(count + 1) — dampens extreme counts
       score:       p.rating! * Math.log10(p.ratingCount! + 1),
     }));
 

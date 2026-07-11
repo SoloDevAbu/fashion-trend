@@ -86,4 +86,20 @@ export class ProductRepository {
       .limit(1);
     return !!row;
   }
+
+  async findTopRatedBySource(source: string, limit = 50): Promise<Product[]> {
+    return db
+      .select()
+      .from(products)
+      .where(
+        and(
+          eq(products.source, source as Product["source"]),
+          sql`${products.rating} IS NOT NULL`,
+          sql`${products.ratingCount} IS NOT NULL`,
+          sql`${products.ratingCount} > 0`,
+        ),
+      )
+      .orderBy(desc(products.rating), desc(products.ratingCount))
+      .limit(limit);
+  }
 }

@@ -38,8 +38,10 @@ export class ImagePipeline implements IPipeline {
         const status = (err as { response?: { status?: number } }).response?.status;
         logger.warn(
           { source: product.source, imageUrl: product.imageUrl, status, error: String(err) },
-          'Image download failed, skipping',
+          'Image upload failed, using original URL as fallback',
         );
+        // Fallback: store the original image URL so the product has a displayable image
+        product.cloudinaryUrl = product.imageUrl;
       }
     }
   }

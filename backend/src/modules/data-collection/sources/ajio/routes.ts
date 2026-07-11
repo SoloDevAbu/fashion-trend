@@ -71,20 +71,37 @@ export function createAjioRouter(collector: NormalizedProduct[]) {
           img?.getAttribute('data-src') ??
           (img?.src?.startsWith('data:') ? '' : (img?.src ?? ''));
 
+        // The Ajio rating badge has aria-label="Rated 2.4 star and 237 customer reviews"
+        // This is accessibility-required and stable across Ajio deploys.
+        const ratingBadge = card.querySelector('[aria-label*="customer reviews"], [aria-label*="Rated"]') as HTMLElement | null;
+        const ariaLabel   = ratingBadge?.getAttribute('aria-label') ?? '';
+        const ratingMatch = ariaLabel.match(/Rated\s+([\d.]+)\s+stars?\s+and\s+([\d,]+)\s+customer/i);
+        let ratingValue = ratingMatch?.[1] ?? '';
+        let ratingCount = ratingMatch?.[2] ?? '';
+
+        if (!ratingCount) {
+          const countEl = card.querySelector('[aria-label^="|"]');
+          if (countEl) {
+            ratingCount = countEl.getAttribute('aria-label') ?? countEl.textContent ?? '';
+          }
+        }
+
         return {
-          href:        anchor?.href ?? '',
+          href:  anchor?.href ?? '',
           imageUrl,
-          brand:       card.querySelector(sel.brand)?.textContent?.trim()        ?? '',
-          name:        card.querySelector(sel.name)?.textContent?.trim()         ?? '',
-          price:      (
+          brand: card.querySelector(sel.brand)?.textContent?.trim() ?? '',
+          name:  card.querySelector(sel.name)?.textContent?.trim()  ?? '',
+          price: (
             card.querySelector(sel.priceStrong) ??
             card.querySelector(sel.price)
           )?.textContent?.trim() ?? '',
-          ratingValue: (card.querySelector(sel.ratingValue) as HTMLElement | null)?.textContent?.trim() ?? '',
-          ratingCount: (card.querySelector(sel.ratingCountEl) as HTMLElement | null)?.textContent?.trim() ?? '',
+          ratingValue,
+          ratingCount,
         };
       });
     }, SELECTORS);
+
+
 
     const products = parser.parse({
       source:     'ajio',
